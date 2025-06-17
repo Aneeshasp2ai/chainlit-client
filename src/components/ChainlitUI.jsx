@@ -540,49 +540,6 @@ export function ChainlitUI() {
               </div>
             </div>
           </div>
-
-          {/* <div className="sticky bottom-0 w-full dark:bg-[#212121] px-4 py-4 flex justify-center">
-            <div className="relative w-full max-w-2xl">
-              <Input
-                autoFocus
-                className="bg-[#F2F2F2] dark:bg-[#424242] text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-300 rounded-3xl px-5 py-8 text-base border-none shadow-none pr-14 focus:outline-none focus:ring-0 focus-visible:ring-0"
-                id="message-input"
-                placeholder="Type a message"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyUp={(e) => {
-                  if (e.key === "Enter") {
-                    handleSendMessage();
-                  }
-                }}
-              />
-              <Button
-                onClick={handleSendMessage}
-                type="submit"
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white text-black w-10 h-10 p-0 hover:bg-gray-100 shadow"
-                variant="ghost"
-              >
-                <ArrowUp size={18} />
-              </Button>
-              <input type="file" onChange={handleFileChange} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white text-black w-10 h-10 p-0 hover:bg-gray-100 shadow" />
-             {isRecording ? (
-  <button
-    onClick={stopRecording}
-    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white text-black w-10 h-10 p-0 hover:bg-gray-100 shadow"
-  >
-    Stop Recording
-  </button>
-) : (
-  <button
-    onClick={startRecording}
-    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white text-black w-10 h-10 p-0 hover:bg-gray-100 shadow"
-  >
-    Start Recording
-  </button>
-)}
-
-            </div>
-          </div> */}
         </div>
       </div>
 

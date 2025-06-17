@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import VoiceRegistrationModal from "../../components/VoiceRegistrationModal";
+import FaceRegistrationModal from "../../components/FaceRegistrationModal";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ export default function Register() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGuestLoginLoading, setIsGuestLoginLoading] = useState(false);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
+  const [showFaceModal, setShowFaceModal] = useState(false);
 
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -58,65 +60,147 @@ export default function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
 
-    setIsSubmitting(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validateForm()) return;
 
-    try {
-      const response = await fetch(
-        "http://localhost:5000/api/v1/auth/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+  setIsSubmitting(true);
 
-      const data = await response.json();
+  try {
+    // First check if email exists
+    const checkResponse = await fetch('http://34.42.43.202:8009/check_user', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email: formData.email })
+    });
 
-      if (!response.ok) {
-        // Handle API validation errors
-        if (data.errors) {
-          const apiErrors = {};
-          data.errors.forEach((err) => {
-            apiErrors[err.path] = err.msg;
-          });
-          setErrors(apiErrors);
-          throw new Error("Please fix the errors in the form");
-        }
-        throw new Error(data.message || "Registration failed");
-      }
+    const checkData = await checkResponse.json();
 
-      // On success
-      setShowSuccess(true);
-      setShowError(false);
-      // Reset form
-      setFormData({
-        fullName: "",
-        email: "",
-        phoneNumber: "",
-        dateOfBirth: "",
-        gender: "",
-        address: "",
-        medicalConditions: "",
-        currentMedications: "",
-        allergies: "",
-        password: "",
-        consent: false,
-      });
-    } catch (err) {
-      // On error
-      setErrorMessage(err.message || "Registration failed. Please try again.");
-      setShowError(true);
-      setShowSuccess(false);
-    } finally {
-      setIsSubmitting(false);
+    if (!checkResponse.ok) {
+      throw new Error(checkData.message || 'Failed to check email');
     }
-  };
+
+    // If email exists, throw error
+    if (checkData.exists) {
+      throw new Error('This email is already registered');
+    }
+
+    // If email doesn't exist, proceed with registration
+    const response = await fetch(
+      "http://localhost:5000/api/v1/auth/register",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      // Handle API validation errors
+      if (data.errors) {
+        const apiErrors = {};
+        data.errors.forEach((err) => {
+          apiErrors[err.path] = err.msg;
+        });
+        setErrors(apiErrors);
+        throw new Error("Please fix the errors in the form");
+      }
+      throw new Error(data.message || "Registration failed");
+    }
+
+    // On success
+    setShowSuccess(true);
+    setShowError(false);
+    // Reset form
+    setFormData({
+      fullName: "",
+      email: "",
+      phoneNumber: "",
+      dateOfBirth: "",
+      gender: "",
+      address: "",
+      medicalConditions: "",
+      currentMedications: "",
+      allergies: "",
+      password: "",
+      consent: false,
+    });
+  } catch (err) {
+    // On error
+    setErrorMessage(err.message || "Registration failed. Please try again.");
+    setShowError(true);
+    setShowSuccess(false);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (!validateForm()) return;
+
+  //   setIsSubmitting(true);
+
+  //   try {
+  //     const response = await fetch(
+  //       "http://localhost:5000/api/v1/auth/register",
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(formData),
+  //       }
+  //     );
+
+  //     const data = await response.json();
+
+  //     if (!response.ok) {
+  //       // Handle API validation errors
+  //       if (data.errors) {
+  //         const apiErrors = {};
+  //         data.errors.forEach((err) => {
+  //           apiErrors[err.path] = err.msg;
+  //         });
+  //         setErrors(apiErrors);
+  //         throw new Error("Please fix the errors in the form");
+  //       }
+  //       throw new Error(data.message || "Registration failed");
+  //     }
+
+  //     // On success
+  //     setShowSuccess(true);
+  //     setShowError(false);
+  //     // Reset form
+  //     setFormData({
+  //       fullName: "",
+  //       email: "",
+  //       phoneNumber: "",
+  //       dateOfBirth: "",
+  //       gender: "",
+  //       address: "",
+  //       medicalConditions: "",
+  //       currentMedications: "",
+  //       allergies: "",
+  //       password: "",
+  //       consent: false,
+  //     });
+  //   } catch (err) {
+  //     // On error
+  //     setErrorMessage(err.message || "Registration failed. Please try again.");
+  //     setShowError(true);
+  //     setShowSuccess(false);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
 
   // Add this to your existing handleSubmit function (before the return statement)
   const handleGuestLogin = async () => {
@@ -161,6 +245,12 @@ export default function Register() {
     console.log("Voice registration with email:", email);
     setShowVoiceModal(false);
     // You might want to show a success message or redirect
+  };
+
+  const handleFaceRegistration = (userId) => {
+    console.log("Face registration successful with user ID:", userId);
+    // You might want to store the user ID or navigate to login
+    navigate("/login");
   };
 
   return (
@@ -590,6 +680,28 @@ export default function Register() {
                   </svg>
                   Voice Registration
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowFaceModal(true)}
+                  className="w-full bg-[#171717] hover:bg-[#4761E2] text-white border border-white/30 px-6 py-3 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2 mt-2"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Face Registration
+                </button>
               </div>
             </form>
             {/* Already have account */}
@@ -605,11 +717,17 @@ export default function Register() {
           </div>
         </div>
         {showVoiceModal && (
-  <VoiceRegistrationModal 
-    onClose={() => setShowVoiceModal(false)}
-    onSubmit={handleVoiceRegistration}
-  />
-)}
+          <VoiceRegistrationModal
+            onClose={() => setShowVoiceModal(false)}
+            onSubmit={handleVoiceRegistration}
+          />
+        )}
+        {showFaceModal && (
+          <FaceRegistrationModal
+            onClose={() => setShowFaceModal(false)}
+            onSubmit={handleFaceRegistration}
+          />
+        )}
       </div>
 
       {/* Add these styles for animations */}

@@ -1,7 +1,8 @@
 import { use } from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import VoiceLoginModal from "../../components/VoiceLoginModal"; // Adjust path as needed
+import VoiceLoginModal from "../../components/VoiceLoginModal";
+import FaceLoginModal from "../../components/FaceLoginModal";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function Login() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isEmailLogin, setIsEmailLogin] = useState(false);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
+  const [showFaceModal, setShowFaceModal] = useState(false);
 
   // Add this function to handle voice login submission
   const handleVoiceLogin = (speakerId) => {
@@ -24,6 +26,12 @@ export default function Login() {
     console.log("Voice login with speaker ID:", speakerId);
     setShowVoiceModal(false);
     // You might want to show a success message or redirect
+  };
+
+  const handleFaceLogin = (userId) => {
+    console.log("Face login successful for user ID:", userId);
+    // You can store the user ID or navigate to dashboard
+    navigate("/thread/:threadId");
   };
 
   const handleChange = (e) => {
@@ -410,7 +418,7 @@ export default function Login() {
                   "Continue as Guest"
                 )}
               </button>
-              
+
               <button
                 type="button"
                 onClick={() => setShowVoiceModal(true)}
@@ -430,6 +438,28 @@ export default function Login() {
                 </svg>
                 Voice Login
               </button>
+
+              <button
+                type="button"
+                onClick={() => setShowFaceModal(true)}
+                className="w-full bg-[#171717] hover:bg-[#4761E2] text-white border border-white/30 px-6 py-3 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2 mt-2"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Face Login
+              </button>
               {/* Forgot Password (only shown for email login) */}
               {isEmailLogin && (
                 <div className="text-right text-sm mt-2">
@@ -442,6 +472,16 @@ export default function Login() {
                 </div>
               )}
             </form>
+             {/* Already have account */}
+            <div className="text-center text-sm mt-6">
+              New User?{" "}
+              <Link
+                to="/register"
+                className="text-[#4761E2] underline hover:text-white transition-colors"
+              >
+                Register here
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -449,6 +489,13 @@ export default function Login() {
           <VoiceLoginModal
             onClose={() => setShowVoiceModal(false)}
             onSubmit={handleVoiceLogin}
+          />
+        )}
+
+        {showFaceModal && (
+          <FaceLoginModal
+            onClose={() => setShowFaceModal(false)}
+            onSubmit={handleFaceLogin}
           />
         )}
       </div>

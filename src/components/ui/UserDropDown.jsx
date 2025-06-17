@@ -26,7 +26,7 @@ export function UserDropdown({ userName }) {
     try {
       const accessToken = localStorage.getItem('accessToken');
       
-      const response = await fetch('http://localhost:5000/api/v1/auth/logout', {
+      const response = await fetch('https://ai-health-backend.vercel.app/api/v1/auth/logout', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,

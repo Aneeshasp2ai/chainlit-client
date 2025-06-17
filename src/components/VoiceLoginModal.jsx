@@ -51,10 +51,10 @@ export default function VoiceLoginModal({ onClose, onSubmit }) {
     setError(null);
     
     try {
-      const response = await fetch(`http://13.51.177.163:8000/regional-voice/verification-text/${speakerId}`);
+      const response = await fetch(`http://34.42.43.202:8000/regional-voice/verification-text/${speakerId}`);
       const data = await response.json();
 
-      if (!response.ok) throw new Error(data.message || 'Failed to get verification text');
+      if (!response.ok) throw new Error(data.message || 'User not found');
 
       setVerificationData(data);
 
@@ -264,56 +264,65 @@ const handleVoiceVerification = async () => {
   try {
     const formData = new FormData();
     formData.append('audio_file', recordedBlob, 'recording.wav');
-
-    const response = await fetch(`http://13.51.177.163:8000/regional-voice/verify/${speakerId}`, {
+    const response = await fetch(`http://34.42.43.202:8000/regional-voice/verify/${speakerId}`, {
       method: 'POST',
       body: formData
     });
-
     const data = await response.json();
-
-    if (!response.ok) throw new Error(data.message || 'Verification failed');
-
-    const navigateAfterAudio = () => {
-      // Replace '/dashboard' with your desired route
-      window.location.href = '/thread/:threadId'; 
-      // Or if using React Router:
-      // navigate('/dashboard');
-    };
-
-    // Play success audio if available in response
-    if (data.audio_base64) {
-      const byteCharacters = atob(data.audio_base64);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    
+    if (!response.ok) throw new Error(data.message || 'Voice Verification failed');
+    
+    // Check if verification was successful
+    if (data.is_verified === true) {
+      // Store tokens only when verification is successful
+      localStorage.setItem("accessToken", data.access_token);
+      localStorage.setItem("refreshToken", data.refresh_token);
+      
+      const navigateAfterAudio = () => {
+        // Replace '/dashboard' with your desired route
+        window.location.href = '/thread/:threadId'; 
+        // Or if using React Router:
+        // navigate('/dashboard');
+      };
+      
+      // Play success audio if available in response
+      if (data.audio_base64) {
+        const byteCharacters = atob(data.audio_base64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'audio/mpeg' });
+        const url = URL.createObjectURL(blob);
+        
+        const successAudio = new Audio(url);
+        successAudio.onended = () => {
+          URL.revokeObjectURL(url); // Clean up
+          setSuccess('Voice verification successful!'); // Show success message after audio
+          setTimeout(navigateAfterAudio, 1500); // Navigate after showing message
+        };
+        
+        successAudio.onerror = () => {
+          // If audio fails, still show success and navigate
+          setSuccess('Voice verification successful!');
+          setTimeout(navigateAfterAudio, 1500);
+        };
+        
+        successAudio.play().catch(err => {
+          console.error("Error playing success audio:", err);
+          setSuccess('Voice verification successful!');
+          setTimeout(navigateAfterAudio, 1500);
+        });
+      } else {
+        // If no audio, show success and navigate
+        setSuccess('Voice verification successful!');
+        setTimeout(navigateAfterAudio, 1500);
       }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'audio/mpeg' });
-      const url = URL.createObjectURL(blob);
-      
-      const successAudio = new Audio(url);
-      successAudio.onended = () => {
-        URL.revokeObjectURL(url); // Clean up
-        setSuccess('Voice verification successful!'); // Show success message after audio
-        setTimeout(navigateAfterAudio, 1500); // Navigate after showing message
-      };
-      
-      successAudio.onerror = () => {
-        // If audio fails, still show success and navigate
-        setSuccess('Voice verification successful!');
-        setTimeout(navigateAfterAudio, 1500);
-      };
-      
-      successAudio.play().catch(err => {
-        console.error("Error playing success audio:", err);
-        setSuccess('Voice verification successful!');
-        setTimeout(navigateAfterAudio, 1500);
-      });
     } else {
-      // If no audio, show success and navigate
-      setSuccess('Voice verification successful!');
-      setTimeout(navigateAfterAudio, 1500);
+      // Verification failed
+      setError('Voice Verification failed');
+      setIsLoading(false);
     }
   } catch (err) {
     setError(err.message);
@@ -375,13 +384,13 @@ const handleVoiceVerification = async () => {
         {!isLoading && !success && verificationStep === 1 && (
           <div className="space-y-4">
             <div className="flex flex-col">
-              <label className="mb-1 text-sm text-white">Speaker ID</label>
+              <label className="mb-1 text-sm text-white">User ID</label>
               <input 
                 type="text" 
                 value={speakerId}
                 onChange={(e) => setSpeakerId(e.target.value)}
                 className="p-2 rounded bg-[#171717] border border-white/10 text-white focus:border-[#4761E2] focus:ring-1 focus:ring-[#4761E2] transition-colors"
-                placeholder="Enter your speaker ID"
+                placeholder="Enter your user ID"
               />
             </div>
 
@@ -395,137 +404,144 @@ const handleVoiceVerification = async () => {
         )}
 
         {!isLoading && !success && verificationStep === 2 && verificationData && (
-          <div className="space-y-4">
-            <div className="bg-[#171717] p-4 rounded-lg">
-              <h4 className="font-medium mb-2 text-white">Verification Information</h4>
-              <div className="grid grid-cols-1 gap-2 text-sm">
-                <div>
-                  <p className="text-white/60">Sample Text:</p>
-                  <p className="text-white">{verificationData.sample_text}</p>
-                </div>
-                <div>
-                  <p className="text-white/60">Instructions:</p>
-                  <p className="text-white">{verificationData.instructions}</p>
-                </div>
-              </div>
-            </div>
+  <div className="space-y-4">
+    {/* Instructions moved to the top */}
+    <div className="bg-[#171717] p-4 rounded-lg">
+      <div className="grid grid-cols-1 gap-2 text-sm">
+        <div>
+          <p className="text-white/60">Instructions:</p>
+          <p className="text-white">{verificationData.instructions}</p>
+        </div>
+      </div>
+    </div>
 
-            {audio && (
-              <div className="bg-[#171717] p-4 rounded-lg">
-                <h4 className="font-medium mb-2 text-white">Audio Instructions</h4>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => {
-                      if (isPlaying) {
-                        audio.pause();
-                        audio.currentTime = 0;
-                        setIsPlaying(false);
-                      } else {
-                        audio.play()
-                          .then(() => setIsPlaying(true))
-                          .catch(err => {
-                            console.error("Error playing audio:", err);
-                            setError('Could not play audio. Please try again.');
-                          });
-                      }
-                    }}
-                    className={`flex items-center gap-2 ${
-                      isPlaying ? 'bg-[#4761E2]/80' : 'bg-[#4761E2] hover:bg-[#4761E2]/90'
-                    } text-white px-4 py-2 rounded-lg transition-colors`}
-                  >
-                    {isPlaying ? (
-                      <>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                        Stop
-                      </>
-                    ) : (
-                      <>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                        </svg>
-                        Play Again
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
+    {/* Sample Text moved below Instructions */}
+    <div className="bg-[#171717] p-4 rounded-lg">
+      <div className="grid grid-cols-1 gap-2 text-sm">
+        <div>
+          <p className="text-white/60">Sample Text:</p>
+          <p className="text-white">{verificationData.sample_text}</p>
+        </div>
+      </div>
+    </div>
+
+    {/* Rest of the components remain the same */}
+    {audio && (
+      <div className="bg-[#171717] p-4 rounded-lg">
+        <h4 className="font-medium mb-2 text-white">Audio Instructions</h4>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => {
+              if (isPlaying) {
+                audio.pause();
+                audio.currentTime = 0;
+                setIsPlaying(false);
+              } else {
+                audio.play()
+                  .then(() => setIsPlaying(true))
+                  .catch(err => {
+                    console.error("Error playing audio:", err);
+                    setError('Could not play audio. Please try again.');
+                  });
+              }
+            }}
+            className={`flex items-center gap-2 ${
+              isPlaying ? 'bg-[#4761E2]/80' : 'bg-[#4761E2] hover:bg-[#4761E2]/90'
+            } text-white px-4 py-2 rounded-lg transition-colors`}
+          >
+            {isPlaying ? (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                Stop
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                </svg>
+                Play Again
+              </>
             )}
+          </button>
+        </div>
+      </div>
+    )}
 
-            {/* Recording Section */}
-            <div className="bg-[#171717] p-4 rounded-lg">
-              <h4 className="font-medium mb-2 text-white">Record Your Voice</h4>
-              <div className="space-y-3">
-                {!recordedBlob ? (
-                  <div className="flex items-center gap-4">
-                    <button
-                      onClick={isRecording ? stopRecording : startRecording}
-                      className={`flex items-center gap-2 ${
-                        isRecording 
-                          ? 'bg-red-500 hover:bg-red-600' 
-                          : 'bg-[#4761E2] hover:bg-[#4761E2]/90'
-                      } text-white px-4 py-2 rounded-lg transition-colors`}
-                    >
-                      {isRecording ? (
-                        <>
-                          <div className="w-3 h-3 bg-white rounded-sm"></div>
-                          Stop ({formatDuration(recordingDuration)})
-                        </>
-                      ) : (
-                        <>
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
-                          </svg>
-                          Start Recording
-                        </>
-                      )}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-green-400 text-sm">✓ Recording completed ({formatDuration(recordingDuration)})</span>
-                      <button
-                        onClick={() => {
-                          setRecordedBlob(null);
-                          setRecordedAudioUrl(null);
-                          setRecordingDuration(0);
-                        }}
-                        className="text-white/50 hover:text-white text-sm"
-                      >
-                        Clear
-                      </button>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={playRecordedAudio}
-                        className="flex items-center gap-2 bg-[#4761E2]/20 hover:bg-[#4761E2]/30 text-[#4761E2] px-3 py-1 rounded text-sm transition-colors"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                        </svg>
-                        Play
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
+    {/* Recording Section */}
+    <div className="bg-[#171717] p-4 rounded-lg">
+      <h4 className="font-medium mb-2 text-white">Record Your Voice</h4>
+      <div className="space-y-3">
+        {!recordedBlob ? (
+          <div className="flex items-center gap-4">
             <button
-              onClick={handleVoiceVerification}
-              disabled={!recordedBlob}
-              className={`w-full ${
-                recordedBlob 
-                  ? 'bg-[#4761E2] hover:bg-[#4761E2]/90' 
-                  : 'bg-gray-600 cursor-not-allowed'
-              } text-white px-6 py-3 rounded-lg transition-colors`}
+              onClick={isRecording ? stopRecording : startRecording}
+              className={`flex items-center gap-2 ${
+                isRecording 
+                  ? 'bg-red-500 hover:bg-red-600' 
+                  : 'bg-[#4761E2] hover:bg-[#4761E2]/90'
+              } text-white px-4 py-2 rounded-lg transition-colors`}
             >
-              Verify My Voice
+              {isRecording ? (
+                <>
+                  <div className="w-3 h-3 bg-white rounded-sm"></div>
+                  Stop ({formatDuration(recordingDuration)})
+                </>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
+                  </svg>
+                  Start Recording
+                </>
+              )}
             </button>
           </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-green-400 text-sm">✓ Recording completed ({formatDuration(recordingDuration)})</span>
+              <button
+                onClick={() => {
+                  setRecordedBlob(null);
+                  setRecordedAudioUrl(null);
+                  setRecordingDuration(0);
+                }}
+                className="text-white/50 hover:text-white text-sm"
+              >
+                Clear
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={playRecordedAudio}
+                className="flex items-center gap-2 bg-[#4761E2]/20 hover:bg-[#4761E2]/30 text-[#4761E2] px-3 py-1 rounded text-sm transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                </svg>
+                Play
+              </button>
+            </div>
+          </div>
         )}
+      </div>
+    </div>
+
+    <button
+      onClick={handleVoiceVerification}
+      disabled={!recordedBlob}
+      className={`w-full ${
+        recordedBlob 
+          ? 'bg-[#4761E2] hover:bg-[#4761E2]/90' 
+          : 'bg-gray-600 cursor-not-allowed'
+      } text-white px-6 py-3 rounded-lg transition-colors`}
+    >
+      Verify My Voice
+    </button>
+  </div>
+)}
       </div>
     </div>
   );
