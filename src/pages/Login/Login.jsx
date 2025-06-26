@@ -1,8 +1,10 @@
-import { use } from "react";
-import { useState } from "react";
+
+import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import VoiceLoginModal from "../../components/VoiceLoginModal";
 import FaceLoginModal from "../../components/FaceLoginModal";
+import healthcareVideo from './Baby-Doctor.mp4' 
+
 
 export default function Login() {
   const navigate = useNavigate();
@@ -12,13 +14,13 @@ export default function Login() {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGuestLoginLoading, setIsGuestLoginLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isEmailLogin, setIsEmailLogin] = useState(false);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [showFaceModal, setShowFaceModal] = useState(false);
+      const videoRef = useRef(null)
 
   // Add this function to handle voice login submission
   const handleVoiceLogin = (speakerId) => {
@@ -146,46 +148,27 @@ export default function Login() {
     }
   };
 
-  // Add this to your existing handleSubmit function (before the return statement)
-  const handleGuestLogin = async () => {
-    setIsGuestLoginLoading(true);
-    setShowError(false);
 
-    try {
-      const response = await fetch(
-        "http://localhost:5000/api/v1/auth/guest-login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Guest login failed");
-      }
-
-      // Store authentication data
-      localStorage.setItem("accessToken", data.data.accessToken);
-      localStorage.setItem("refreshToken", data.data.refreshToken);
-      localStorage.setItem("userId", data.data.userId);
-      localStorage.setItem("FullName", data.data.FullName || "Guest User");
-
-      setShowSuccess(true);
-      setTimeout(() => navigate("/thread/:threadId"), 1500);
-    } catch (err) {
-      setErrorMessage(err.message || "Guest login failed. Please try again.");
-      setShowError(true);
-    } finally {
-      setIsGuestLoginLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-[#171717] text-white flex items-center justify-center p-4 relative">
+      
+       {/* Video Background */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <video
+                ref={videoRef}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover opacity-30" // Reduced opacity for better text readability
+              >
+                <source src={healthcareVideo} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+              {/* Dark overlay to improve text contrast */}
+              <div className="absolute inset-0 bg-black/40"></div>
+            </div>
       {/* Success Toast */}
       {showSuccess && (
         <div className="absolute top-4 right-4 z-50 animate-fade-in">
@@ -383,41 +366,7 @@ export default function Login() {
                   "Send OTP"
                 )}
               </button>
-              {/* Add this Guest Login Button */}
-              <button
-                type="button"
-                onClick={handleGuestLogin}
-                disabled={isGuestLoginLoading}
-                className="w-full bg-[#171717] hover:bg-[#4761E2] text-white border border-white/30 px-6 py-3 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2 mt-2"
-              >
-                {isGuestLoginLoading ? (
-                  <>
-                    <svg
-                      className="animate-spin h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Signing in as Guest...
-                  </>
-                ) : (
-                  "Continue as Guest"
-                )}
-              </button>
+             
 
               <button
                 type="button"

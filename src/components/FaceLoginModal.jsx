@@ -34,6 +34,8 @@ export default function FaceLoginModal({ onClose, onSubmit }) {
     setStep(2); // Move to face verification step
   };
 
+
+
   const handleSubmit = async () => {
     if (!image) {
       setAlert({
@@ -51,6 +53,7 @@ export default function FaceLoginModal({ onClose, onSubmit }) {
       const formData = new FormData();
       formData.append('image', blob, 'face.jpg');
       formData.append('user_id', userId);
+      localStorage.setItem("userId", userId); // Store user ID for later use
       
       const response = await fetch('http://34.42.43.202:8009/face/verify', {
         method: 'POST',

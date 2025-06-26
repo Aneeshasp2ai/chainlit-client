@@ -1,7 +1,9 @@
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { LanguageSelector } from "../components/ui/LanguageSelector";
-import { useChatInteract, useChatMessages } from "@chainlit/react-client";
+import { useChatInteract, useChatMessages, sessionState, useChatSession } from "@chainlit/react-client";
+
+import { useRecoilValue } from "recoil";
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { marked } from "marked";
 import {
@@ -81,6 +83,25 @@ export function ChainlitUI() {
 
   const mediaRecorderRef = useRef(null);
   const [isRecording, setIsRecording] = useState(false);
+
+   const { connect } = useChatSession();
+    const session = useRecoilValue(sessionState);
+    
+    useEffect(() => {
+      if (session?.socket.connected) {
+        return;
+      }
+      const userId = localStorage.getItem('userId');
+      console.log("User ID in Chainlit Component", userId);
+      fetch("http://localhost:80/custom-auth", {
+        credentials: "include"
+      })
+      .then(() => {
+        connect({
+          userEnv
+        });
+      });
+    }, [connect]);
 
   const startRecording = async () => {
     try {

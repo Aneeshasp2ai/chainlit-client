@@ -13,23 +13,23 @@ import OTPVerification from "./pages/OTPVerify/OtpVerification";
 const userEnv = {};
 
 function App() {
-  const { connect } = useChatSession();
-  const session = useRecoilValue(sessionState);
+  // const { connect } = useChatSession();
+  // const session = useRecoilValue(sessionState);
   
-  useEffect(() => {
-    if (session?.socket.connected) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (session?.socket.connected) {
+  //     return;
+  //   }
     
-    fetch("http://localhost:80/custom-auth", {
-      credentials: "include"
-    })
-    .then(() => {
-      connect({
-        userEnv
-      });
-    });
-  }, [connect]);
+  //   fetch("http://localhost:80/custom-auth", {
+  //     credentials: "include"
+  //   })
+  //   .then(() => {
+  //     connect({
+  //       userEnv
+  //     });
+  //   });
+  // }, [connect]);
 
   return (
     <Router>

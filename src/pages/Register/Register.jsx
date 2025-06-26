@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import VoiceRegistrationModal from "../../components/VoiceRegistrationModal";
 import FaceRegistrationModal from "../../components/FaceRegistrationModal";
+import DoctorImg from "./Doctor-Img-Photoroom.png";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -20,7 +21,6 @@ export default function Register() {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGuestLoginLoading, setIsGuestLoginLoading] = useState(false);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [showFaceModal, setShowFaceModal] = useState(false);
 
@@ -60,183 +60,87 @@ export default function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!validateForm()) return;
+    setIsSubmitting(true);
 
-  setIsSubmitting(true);
-
-  try {
-    // First check if email exists
-    const checkResponse = await fetch('http://34.42.43.202:8009/check_user', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email: formData.email })
-    });
-
-    const checkData = await checkResponse.json();
-
-    if (!checkResponse.ok) {
-      throw new Error(checkData.message || 'Failed to check email');
-    }
-
-    // If email exists, throw error
-    if (checkData.exists) {
-      throw new Error('This email is already registered');
-    }
-
-    // If email doesn't exist, proceed with registration
-    const response = await fetch(
-      "http://localhost:5000/api/v1/auth/register",
-      {
+    try {
+      // First check if email exists
+      const checkResponse = await fetch("http://34.42.43.202:8009/check_user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ email: formData.email, mode: "form" }),
+      });
+
+      const checkData = await checkResponse.json();
+
+
+      if (!checkResponse.ok) {
+        throw new Error(checkData.message || "Failed to check email");
+        
       }
-    );
+     
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      // Handle API validation errors
-      if (data.errors) {
-        const apiErrors = {};
-        data.errors.forEach((err) => {
-          apiErrors[err.path] = err.msg;
-        });
-        setErrors(apiErrors);
-        throw new Error("Please fix the errors in the form");
+      // If email exists, throw error
+      if (checkData.exists) {
+        throw new Error("This email is already registered");
       }
-      throw new Error(data.message || "Registration failed");
-    }
 
-    // On success
-    setShowSuccess(true);
-    setShowError(false);
-    // Reset form
-    setFormData({
-      fullName: "",
-      email: "",
-      phoneNumber: "",
-      dateOfBirth: "",
-      gender: "",
-      address: "",
-      medicalConditions: "",
-      currentMedications: "",
-      allergies: "",
-      password: "",
-      consent: false,
-    });
-  } catch (err) {
-    // On error
-    setErrorMessage(err.message || "Registration failed. Please try again.");
-    setShowError(true);
-    setShowSuccess(false);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   if (!validateForm()) return;
-
-  //   setIsSubmitting(true);
-
-  //   try {
-  //     const response = await fetch(
-  //       "http://localhost:5000/api/v1/auth/register",
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify(formData),
-  //       }
-  //     );
-
-  //     const data = await response.json();
-
-  //     if (!response.ok) {
-  //       // Handle API validation errors
-  //       if (data.errors) {
-  //         const apiErrors = {};
-  //         data.errors.forEach((err) => {
-  //           apiErrors[err.path] = err.msg;
-  //         });
-  //         setErrors(apiErrors);
-  //         throw new Error("Please fix the errors in the form");
-  //       }
-  //       throw new Error(data.message || "Registration failed");
-  //     }
-
-  //     // On success
-  //     setShowSuccess(true);
-  //     setShowError(false);
-  //     // Reset form
-  //     setFormData({
-  //       fullName: "",
-  //       email: "",
-  //       phoneNumber: "",
-  //       dateOfBirth: "",
-  //       gender: "",
-  //       address: "",
-  //       medicalConditions: "",
-  //       currentMedications: "",
-  //       allergies: "",
-  //       password: "",
-  //       consent: false,
-  //     });
-  //   } catch (err) {
-  //     // On error
-  //     setErrorMessage(err.message || "Registration failed. Please try again.");
-  //     setShowError(true);
-  //     setShowSuccess(false);
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
-
-  // Add this to your existing handleSubmit function (before the return statement)
-  const handleGuestLogin = async () => {
-    setIsGuestLoginLoading(true);
-    setShowError(false);
-
-    try {
+      // If email doesn't exist, proceed with registration
       const response = await fetch(
-        "http://localhost:5000/api/v1/auth/guest-login",
+        "http://localhost:5000/api/v1/auth/register",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
+          body: JSON.stringify(formData),
         }
       );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Guest login failed");
+        // Handle API validation errors
+        if (data.errors) {
+          const apiErrors = {};
+          data.errors.forEach((err) => {
+            apiErrors[err.path] = err.msg;
+          });
+          setErrors(apiErrors);
+          throw new Error("Please fix the errors in the form");
+        }
+        throw new Error(data.message || "Registration failed");
       }
 
-      // Store authentication data
-      localStorage.setItem("accessToken", data.data.accessToken);
-      localStorage.setItem("refreshToken", data.data.refreshToken);
-      localStorage.setItem("userId", data.data.userId);
-      localStorage.setItem("FullName", data.data.FullName || "Guest User");
-
+      // On success
       setShowSuccess(true);
-      setTimeout(() => navigate("/thread/:threadId"), 1500);
+      setShowError(false);
+      // Reset form
+      setFormData({
+        fullName: "",
+        email: "",
+        phoneNumber: "",
+        dateOfBirth: "",
+        gender: "",
+        address: "",
+        medicalConditions: "",
+        currentMedications: "",
+        allergies: "",
+        password: "",
+        consent: false,
+      });
     } catch (err) {
-      setErrorMessage(err.message || "Guest login failed. Please try again.");
+      // On error
+      setErrorMessage(err.message || "Registration failed. Please try again.");
       setShowError(true);
+      setShowSuccess(false);
     } finally {
-      setIsGuestLoginLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -350,6 +254,15 @@ const handleSubmit = async (e) => {
       <div className="w-full max-w-6xl flex flex-col md:flex-row items-center md:items-stretch md:justify-between border-white/10 rounded-2xl overflow-hidden">
         {/* Left Section */}
         <div className="flex-1 p-6 sm:p-8 md:p-12 text-center md:text-left flex flex-col justify-center">
+          {/* Healthcare AI Icon/Image */}
+          <div className="mb-8 flex justify-center md:justify-start">
+            <img
+              src={DoctorImg}
+              alt="Healthcare AI"
+              className="w-40 h-40 sm:w-60 sm:h-60 md:w-80 md:h-80 lg:w-96 lg:h-96  object-cover transition-all duration-300 hover:scale-105"
+            />
+          </div>
+
           <h1 className="text-[36px] sm:text-[48px] md:text-[60px] font-medium leading-tight mb-6">
             Your Health, Enhanced by AI
           </h1>
@@ -622,42 +535,6 @@ const handleSubmit = async (e) => {
                     </>
                   ) : (
                     "Register"
-                  )}
-                </button>
-
-                {/* Add this Guest Login Button */}
-                <button
-                  type="button"
-                  onClick={handleGuestLogin}
-                  disabled={isGuestLoginLoading}
-                  className="w-full bg-[#171717] hover:bg-[#4761E2] text-white border border-white/30 px-6 py-3 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2 mt-2"
-                >
-                  {isGuestLoginLoading ? (
-                    <>
-                      <svg
-                        className="animate-spin h-5 w-5 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Signing in as Guest...
-                    </>
-                  ) : (
-                    "Continue as Guest"
                   )}
                 </button>
 

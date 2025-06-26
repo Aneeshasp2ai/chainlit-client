@@ -63,7 +63,7 @@ export default function VoiceRegistrationModal({ onClose, onSubmit }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email, mode: "voice" })
       });
 
       const data = await response.json();
@@ -415,7 +415,7 @@ export default function VoiceRegistrationModal({ onClose, onSubmit }) {
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium">
             {emailChecked && emailExists ? 'User Exists' : 
-             emailChecked ? 'Voice Registration' : 'Check Email'}
+             emailChecked ? 'Voice Registration' : 'Voice Registration'}
           </h3>
           <button 
             onClick={onClose}
@@ -506,7 +506,7 @@ export default function VoiceRegistrationModal({ onClose, onSubmit }) {
               disabled={isLoading}
               className="w-full bg-[#4761E2] hover:bg-[#4761E2]/90 text-white px-6 py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Check Email
+              Continue to voice enrollment
             </button>
           </form>
         )}
