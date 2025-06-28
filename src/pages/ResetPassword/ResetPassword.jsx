@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import authRoutes from '../../config/api';
+
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -62,7 +64,7 @@ export default function ResetPassword() {
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('http://localhost:5000/api/v1/auth/reset-password', {
+      const response = await fetch(`${authRoutes.resendOtp}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

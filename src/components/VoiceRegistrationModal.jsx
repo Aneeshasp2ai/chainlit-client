@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import authRoutes from '../config/api';
 
 export default function VoiceRegistrationModal({ onClose, onSubmit }) {
   const navigate = useNavigate();
@@ -58,7 +59,7 @@ export default function VoiceRegistrationModal({ onClose, onSubmit }) {
     setError(null);
 
     try {
-      const response = await fetch('http://34.42.43.202:8009/check_user', {
+      const response = await fetch(`${authRoutes.checkUser}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -126,7 +127,7 @@ export default function VoiceRegistrationModal({ onClose, onSubmit }) {
     setError(null);
     
     try {
-      const response = await fetch('http://34.42.43.202:8000/regional-voice/detect-language', {
+      const response = await fetch(`${authRoutes.detectLanguage}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -348,7 +349,8 @@ export default function VoiceRegistrationModal({ onClose, onSubmit }) {
       formData.append('email_id', email);
 
       const enrollResponse = await fetch(
-        `http://34.42.43.202:8000/regional-voice/enroll?session_id=${sessionId}&email_id=${encodeURIComponent(email)}`,
+         `${authRoutes.voiceRegister}?session_id=${sessionId}&email_id=${encodeURIComponent(email)}`,
+        //  `http://13.51.177.163:8000/regional-voice/enroll?session_id=${sessionId}&email_id=${encodeURIComponent(email)}`,
         {
           method: 'POST',
           body: formData

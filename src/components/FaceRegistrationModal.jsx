@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import Webcam from "react-webcam";
+import authRoutes from '../config/api';
 
 export default function FaceRegistrationModal({ onClose, onSubmit }) {
   const webcamRef = useRef(null);
@@ -28,7 +29,7 @@ export default function FaceRegistrationModal({ onClose, onSubmit }) {
       setIsCheckingEmail(true);
       setError(null);
       
-      const response = await fetch('http://34.42.43.202:8009/check_user', {
+      const response = await fetch(`${authRoutes.checkUser}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,7 +100,7 @@ export default function FaceRegistrationModal({ onClose, onSubmit }) {
       formData.append('email_id', email);
       
       // Call the face enrollment API
-      const response = await fetch('http://34.42.43.202:8009/face/enroll', {
+      const response = await fetch(`${authRoutes.faceRegister}`, {
         method: 'POST',
         body: formData
       });

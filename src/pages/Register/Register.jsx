@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import VoiceRegistrationModal from "../../components/VoiceRegistrationModal";
 import FaceRegistrationModal from "../../components/FaceRegistrationModal";
+import authRoutes from '../../config/api'
+
 import DoctorImg from "./Doctor-Img-Photoroom.png";
 
 export default function Register() {
@@ -68,7 +70,7 @@ export default function Register() {
 
     try {
       // First check if email exists
-      const checkResponse = await fetch("http://34.42.43.202:8009/check_user", {
+      const checkResponse = await fetch(`${authRoutes.checkUser}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -92,7 +94,7 @@ export default function Register() {
 
       // If email doesn't exist, proceed with registration
       const response = await fetch(
-        "http://localhost:5000/api/v1/auth/register",
+        `${authRoutes.register}`,
         {
           method: "POST",
           headers: {

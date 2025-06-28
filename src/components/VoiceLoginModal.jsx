@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import authRoutes from '../config/api';
+
 
 export default function VoiceLoginModal({ onClose, onSubmit }) {
   const [speakerId, setSpeakerId] = useState('');
@@ -264,7 +266,10 @@ const handleVoiceVerification = async () => {
   try {
     const formData = new FormData();
     formData.append('audio_file', recordedBlob, 'recording.wav');
-    const response = await fetch(`http://34.42.43.202:8000/regional-voice/verify/${speakerId}`, {
+    const response = await fetch(
+      // `http://34.42.43.202:8000/regional-voice/verify/${speakerId}`,
+      `${authRoutes.voiceLogin}/${speakerId}`, 
+       {
       method: 'POST',
       body: formData
     });

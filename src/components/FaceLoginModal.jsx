@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import Webcam from "react-webcam";
+import authRoutes from "../config/api";
 
 export default function FaceLoginModal({ onClose, onSubmit }) {
   const webcamRef = useRef(null);
@@ -55,7 +56,7 @@ export default function FaceLoginModal({ onClose, onSubmit }) {
       formData.append('user_id', userId);
       localStorage.setItem("userId", userId); // Store user ID for later use
       
-      const response = await fetch('http://34.42.43.202:8009/face/verify', {
+      const response = await fetch(`${authRoutes.faceLogin}`, {
         method: 'POST',
         body: formData
       });

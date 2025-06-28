@@ -19,6 +19,7 @@ import {
 import { QRModal } from "../components/ui/QR-Modal";
 import { useNavigate, useParams } from "react-router-dom";
 import { UserDropdown } from "../components/ui/UserDropDown";
+import authRoutes from "../config/api";
 
 // Helper: Flatten messages
 function flattenMessages(messages, condition) {
@@ -60,6 +61,8 @@ function useThemeToggle() {
   return { isDark, toggleTheme };
 }
 
+
+
 export function ChainlitUI() {
   const { threadId: urlThreadId } = useParams();
   const [activeThreadId, setActiveThreadId] = useState();
@@ -84,24 +87,7 @@ export function ChainlitUI() {
   const mediaRecorderRef = useRef(null);
   const [isRecording, setIsRecording] = useState(false);
 
-   const { connect } = useChatSession();
-    const session = useRecoilValue(sessionState);
-    
-    useEffect(() => {
-      if (session?.socket.connected) {
-        return;
-      }
-      const userId = localStorage.getItem('userId');
-      console.log("User ID in Chainlit Component", userId);
-      fetch("http://localhost:80/custom-auth", {
-        credentials: "include"
-      })
-      .then(() => {
-        connect({
-          userEnv
-        });
-      });
-    }, [connect]);
+   
 
   const startRecording = async () => {
     try {

@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import VoiceLoginModal from "../../components/VoiceLoginModal";
 import FaceLoginModal from "../../components/FaceLoginModal";
+import authRoutes from "../../config/api";
 import healthcareVideo from './Baby-Doctor.mp4' 
 
 
@@ -91,7 +92,7 @@ export default function Login() {
 
       if (isEmailLogin) requestData.password = formData.password;
 
-      const response = await fetch("http://localhost:5000/api/v1/auth/login", {
+      const response = await fetch(`${authRoutes.login}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestData),

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import authRoutes from '../../config/api';
 
 export default function OTPVerification() {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -70,7 +71,7 @@ export default function OTPVerification() {
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('http://localhost:5000/api/v1/auth/verify-otp', {
+      const response = await fetch(`${authRoutes.verifyOtp}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

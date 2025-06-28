@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import authRoutes from "../../config/api";
 
 export function UserDropdown({ userName }) {
   const [open, setOpen] = useState(false);
@@ -28,7 +29,7 @@ export function UserDropdown({ userName }) {
     try {
       const accessToken = localStorage.getItem('accessToken');
       
-      const response = await fetch('http://localhost:5000/api/v1/auth/logout', {
+      const response = await fetch(`${authRoutes.logout}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,

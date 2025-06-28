@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import authRoutes from '../../config/api'
 import healthcareVideo from './Doctor.mp4' 
 
 export default function Home() {
@@ -17,7 +18,7 @@ export default function Home() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/v1/auth/guest-login",
+        `${authRoutes.guestLogin}`,
         {
           method: "POST",
           headers: {
