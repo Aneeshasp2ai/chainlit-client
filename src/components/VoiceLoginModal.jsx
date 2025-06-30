@@ -53,7 +53,11 @@ export default function VoiceLoginModal({ onClose, onSubmit }) {
     setError(null);
     
     try {
-      const response = await fetch(`http://34.42.43.202:8000/regional-voice/verification-text/${speakerId}`);
+      const response = await fetch(
+        // `http://34.42.43.202:8000/regional-voice/verification-text/${speakerId}`
+        `${authRoutes.voiceText}/${speakerId}`
+
+      );
       const data = await response.json();
 
       if (!response.ok) throw new Error(data.message || 'User not found');

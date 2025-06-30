@@ -13,6 +13,7 @@ const authRoutes = {
     faceLogin: `${FACE_API_V1 }/face/verify`,
     voiceRegister: `${VOICE_API_V1 }/regional-voice/enroll`, 
     voiceLogin: `${VOICE_API_V1 }/regional-voice/verify`,
+    voiceText: `${VOICE_API_V1 }/regional-voice/verification-text`,
     checkUser: `${FACE_API_V1 }/check_user`,
     detectLanguage: `${VOICE_API_V1 }/regional-voice/detect-language`,
 

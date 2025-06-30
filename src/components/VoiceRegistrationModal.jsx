@@ -92,8 +92,10 @@ export default function VoiceRegistrationModal({ onClose, onSubmit }) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setLocation({
-            latitude: 10.850516,
-            longitude: 76.271080
+            // latitude: 10.850516,
+            // longitude: 76.271080
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
           });
         },
         (err) => {
